@@ -1,0 +1,21 @@
+﻿@model IEnumerable<Financeiro_TN.Models.NF>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nome do Pagador</th>
+            <th>Número da Nota</th>
+            <th>Data de Emissão</th>
+            <th>Data de Cobrança</th>
+            <th>Data de Pagamento</th>
+            <th>Valor</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var nf in Model)
+        {
+            <partial name="_NF" for="@nf" />
+        }
+    </tbody>
+</table>

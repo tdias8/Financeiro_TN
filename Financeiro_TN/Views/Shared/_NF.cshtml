@@ -1,0 +1,16 @@
+﻿@model NF
+
+<tr>
+    <td>@Model.NomePagador</td>
+    <td>@Model.NumeroNF</td>
+    <td>@Model.DataEmissao.ToString("dd/MM/yyyy")</td>
+    <td>@Model.DataCobranca.ToString("dd/MM/yyyy")</td>
+    <td>@(Model.DataPagamento.HasValue ? Model.DataPagamento.Value.ToString("dd/MM/yyyy") : "N/A")</td>
+    <td>R$ @Model.Valor.ToString("N2")</td>
+    <td>
+        @(Model.Status == EnumStatusNota.Emitida ? "Emitida" :
+            Model.Status == EnumStatusNota.PagamentoRealizado ? "Cobrança Realizada" :
+            Model.Status == EnumStatusNota.PagamentoEmAtraso ? "Pagamento em Atraso" :
+            "Pagamento Realizado")
+    </td>
+</tr>

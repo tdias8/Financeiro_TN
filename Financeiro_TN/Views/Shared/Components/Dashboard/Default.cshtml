@@ -1,0 +1,139 @@
+﻿@model Financeiro_TN.Models.Dashboard
+@using System.Globalization
+
+<style>
+    .card {
+        border-radius: 10px;
+        height: 100%;
+    }
+
+    .card-title {
+        font-size: 13px !important;
+    }
+
+    .card-text {
+        font-size: 1.3em;
+        margin-bottom: 0.5em;
+    }
+
+    .icon {
+        font-size: 1.5em;
+        margin-bottom: 10px;
+        padding: 5px;
+    }
+</style>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+    google.charts.load('current', { 'packages': ['corechart'] });
+    google.charts.setOnLoadCallback(drawCharts);
+
+    function drawCharts() {
+        var inadimplenciaData = @Html.Raw(Json.Serialize(Model.InadimplenciaMensal));
+        var receitaData = @Html.Raw(Json.Serialize(Model.ReceitaMensal));
+
+        drawInadimplenciaChart(inadimplenciaData);
+        drawReceitaChart(receitaData);
+    }
+
+    function drawInadimplenciaChart(inadimplenciaData) {
+        var data = google.visualization.arrayToDataTable([
+            ['Mês', 'Inadimplência'],
+            ...inadimplenciaData.map((valor, index) => [new Date(2024, index, 1).toLocaleString('pt-BR', { month: 'long' }), valor])
+        ]);
+
+        var options = {
+            title: 'Evolução da Inadimplência Mês a Mês',
+            curveType: 'function',
+            legend: { position: 'bottom' }
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('inadimplencia_chart'));
+        chart.draw(data, options);
+    }
+
+    function drawReceitaChart(receitaData) {
+        var data = google.visualization.arrayToDataTable([
+            ['Mês', 'Receita'],
+            ...receitaData.map((valor, index) => [new Date(2024, index, 1).toLocaleString('pt-BR', { month: 'long' }), valor])
+        ]);
+
+        var options = {
+            title: 'Evolução da Receita Recebida Mês a Mês',
+            curveType: 'function',
+            legend: { position: 'bottom' }
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('receita_chart'));
+        chart.draw(data, options);
+    }
+</script>
+
+<div class="row">
+    <div style="width:20%">
+        <div class="card text-center mb-3">
+            <div class="card-body">
+                <div class="float-end">
+                    <i class="bi bi-file-earmark-text icon"></i>
+                </div>
+                <h5 class="card-title">Notas Emitidas</h5>
+                <p class="card-text">@Model.TotalNotasEmitidas.ToString("C", new CultureInfo("pt-BR"))</p>
+            </div>
+        </div>
+    </div>
+    <div style="width:20%">
+        <div class="card text-center mb-3">
+            <div class="card-body">
+                <div class="float-end">
+                    <i class="bi bi-file-earmark-minus icon"></i>
+                </div>
+                <h5 class="card-title">Notas Emitidas S/ Cobrança</h5>
+                <p class="card-text">@Model.TotalSemCobranca.ToString("C", new CultureInfo("pt-BR"))</p>
+            </div>
+        </div>
+    </div>
+    <div style="width:20%">
+        <div class="card text-center mb-3">
+            <div class="card-body">
+                <div class="float-end">
+                    <i class="bi bi-exclamation-circle icon"></i>
+                </div>
+                <h5 class="card-title">Notas Vencidas</h5>
+                <p class="card-text">@Model.TotalVencidas.ToString("C", new CultureInfo("pt-BR"))</p>
+            </div>
+        </div>
+    </div>
+    <div style="width:20%">
+        <div class="card text-center mb-3">
+            <div class="card-body">
+                <div class="float-end">
+                    <i class="bi bi-check-circle icon"></i>
+                </div>
+                <div>
+                    <h5 class="card-title">Notas Pagas</h5>
+                    <p class="card-text">@Model.TotalPagas.ToString("C", new CultureInfo("pt-BR"))</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="width:20%">
+        <div class="card text-center mb-3">
+            <div class="card-body">
+                <div class="float-end">
+                    <i class="bi bi-calendar3 icon"></i>
+                </div>
+                <h5 class="card-title">Notas a Vencer</h5>
+                <p class="card-text">@Model.TotalAVencer.ToString("C", new CultureInfo("pt-BR"))</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4 mb-4">
+    <!-- Adicione mb-4 aqui -->
+    <div class="col-md-6">
+        <div id="inadimplencia_chart" style="width: 100%; height: 400px;"></div>
+    </div>
+    <div class="col-md-6">
+        <div id="receita_chart" style="width: 100%; height: 400px;"></div>
+    </div>
+</div>

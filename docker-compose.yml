@@ -1,0 +1,16 @@
+services:
+  financeiro_tn:
+    image: ${DOCKER_REGISTRY-}financeirotn
+    build:
+      context: .
+      dockerfile: Financeiro_TN/Dockerfile
+    depends_on:
+      - sqlserver
+  sqlserver:
+    container_name: sqlserver
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: 'Y'
+      SA_PASSWORD: "@senha12Ab"
+    ports:
+      - '1433:1433'

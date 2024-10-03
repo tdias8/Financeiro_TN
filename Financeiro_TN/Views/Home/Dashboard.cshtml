@@ -1,0 +1,171 @@
+﻿@model HomeViewModel
+
+<style>
+    .card {
+        margin-bottom: 20px;
+    }
+
+    .card-body {
+        padding: var(--bs-card-spacer-y) var(--bs-card-spacer-x);
+    }
+
+    .card-title {
+        font-size: 16px;
+        margin: 0 0 7px 0;
+        font-weight: 600;
+    }
+</style>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+
+<div class="page-content">
+    <div class="row">
+        <h4>Dashboard</h4>
+
+        <div class="row mb-2 justify-content-end">
+            <div class="col-md-3" style="width:10%">
+                <label for="filtroTipo">Filtro por:</label>
+                <select id="filtroTipo" class="form-control" onchange="atualizaDropdown()">
+                    <option value="">Selecione</option>
+                    <option value="mes">Mês</option>
+                    <option value="trimestre">Trimestre</option>
+                    <option value="ano">Ano</option>
+                </select>
+            </div>
+
+            <div class="col-md-3" style="width:10%">
+                <label for="filtroValor">Selecione:</label>
+                <select id="filtroValor" class="form-control" onchange="atualizaDashboard()">
+                    <option value="">Selecione</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="dashboardContainer">
+        </div>
+
+    </div>
+
+
+
+    <div class="row">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title">Notas Fiscais</h2>
+                <form method="get">
+                    <div class="row mb-3 d-flex align-items-end">
+                        <div class="col-md-2">
+                            <label for="mesEmissao">Mês de Emissão:</label>
+                            <input type="month" name="mesEmissao" id="mesEmissao" class="form-control" value="@Context.Request.Query["mesEmissao"]" />
+                        </div>
+
+                        <div class="col-md-2">
+                            <label for="mesCobranca">Mês de Cobrança:</label>
+                            <input type="month" name="mesCobranca" id="mesCobranca" class="form-control" value="@Context.Request.Query["mesCobranca"]" />
+                        </div>
+
+                        <div class="col-md-2">
+                            <label for="mesPagamento">Mês de Pagamento:</label>
+                            <input type="month" name="mesPagamento" id="mesPagamento" class="form-control" value="@Context.Request.Query["mesPagamento"]" />
+                        </div>
+
+                        <div class="col-md-2">
+                            <label for="trimestre">Status::</label>
+                            <select name="status" id="status" class="form-control">
+                                <option value="">Todos</option>
+                                <!option value="1" @(Context.Request.Query["status"] == "1" ? "selected" : "")>Emitida</!option>
+                                <!option value="2" @(Context.Request.Query["status"] == "2" ? "selected" : "")>Cobrança Realizada</!option>
+                                <!option value="3" @(Context.Request.Query["status"] == "3" ? "selected" : "")>Pagamento em Atraso</!option>
+                                <!option value="4" @(Context.Request.Query["status"] == "4" ? "selected" : "")>Pagamento Realizado</!option>
+                            </select>
+
+                        </div>
+
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary">Aplicar Filtros</button>
+                        </div>
+                    </div>
+                </form>
+                @await Component.InvokeAsync("NF", new
+                    {
+                        mesEmissao = Context.Request.Query["mesEmissao"].ToString(),
+                        mesCobranca = Context.Request.Query["mesCobranca"].ToString(),
+                        mesPagamento = Context.Request.Query["mesPagamento"].ToString(),
+                        status = !string.IsNullOrEmpty(Context.Request.Query["status"])
+                         ? int.Parse(Context.Request.Query["status"].ToString())
+                         : (int?)null
+                    })
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+    <script>
+        function atualizaDropdown() {
+            var tipo = document.getElementById("filtroTipo").value;
+            var filtroValor = document.getElementById("filtroValor");
+
+            filtroValor.innerHTML = "<option value=''>Selecione</option>";
+
+            if (tipo === "mes") {
+                for (let i = 1; i <= 12; i++) {
+                    var option = document.createElement("option");
+                    option.value = i;
+                    option.text = new Date(0, i - 1).toLocaleString("pt-BR", { month: "long" });
+                    filtroValor.appendChild(option);
+                }
+            } else if (tipo === "trimestre") {
+                for (let i = 1; i <= 4; i++) {
+                    var option = document.createElement("option");
+                    option.value = i;
+                    option.text = `${i}º Trimestre`;
+                    filtroValor.appendChild(option);
+                }
+            } else if (tipo === "ano") {
+                var anoAtual = new Date().getFullYear();
+                for (let i = -1; i <= 0; i++) {
+                    const option = document.createElement("option");
+                    option.value = anoAtual + i;
+                    option.text = anoAtual + i;
+                    filtroValor.appendChild(option);
+                }
+            }
+        }
+
+        function atualizaDashboard() {
+            var tipo = document.getElementById("filtroTipo").value;
+            var valor = document.getElementById("filtroValor").value;
+
+            let queryParams = "";
+
+            if (tipo === "mes") {
+                queryParams = `?mes=${valor}`;
+            } else if (tipo === "trimestre") {
+                queryParams = `?trimestre=${valor}`;
+            } else if (tipo === "ano") {
+                queryParams = `?ano=${valor}`;
+            }
+
+            $.ajax({
+                url: '/Home/ObterDadosFiltradosDashboard' + queryParams,
+                type: 'GET',
+                success: function (result) {
+                    $('#dashboardContainer').html(result);
+                },
+                error: function () {
+                    alert("Erro ao carregar os dados.");
+                }
+            });
+        }
+
+
+        $(document).ready(function () {
+            atualizaDropdown();
+            atualizaDashboard(null, null);
+
+        });
+    </script>
+
+}
